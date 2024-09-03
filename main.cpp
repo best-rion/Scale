@@ -1,8 +1,25 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
+#include <cmath>
 
 #define HEIGHT 720
 #define WIDTH 1080
+
+sf::Vector2f vectorMultScalar(sf::Vector2f v, float s){
+
+    v.x *= s;
+    v.y *= s;
+
+    return v;
+}
+
+sf::Vector2f vectorAddScalar(sf::Vector2f v, float s){
+
+    v.x += s;
+    v.y += s;
+
+    return v;
+}
 
 
 class ImageSprite: public sf::Sprite {
@@ -70,15 +87,27 @@ int main()
 {
     sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "Scale");
 
-    ImageSprite imageSprite("screw.jpg");
+    ImageSprite imageSprite("10001.jpg");
+
 
     while (window.isOpen())
     {
         sf::Event event;
+
         while (window.pollEvent(event))
         {
-            if (event.type == sf::Event::Closed)
-                window.close();
+            switch (event.type){
+
+                case sf::Event::Closed:
+
+                    window.close();
+                    break;
+
+                case sf::Event::MouseWheelScrolled: // Scaling the image on mouse-scroll
+
+                    imageSprite.setScale( vectorMultScalar( imageSprite.getScale() ,  std::pow(1.01, event.mouseWheelScroll.delta * -1) ) );
+
+            }
         }
 
         window.clear();
@@ -88,40 +117,3 @@ int main()
 
     return 0;
 }
-
-/*
-
-
-
-int main()
-{
-    sf::RenderWindow window(sf::VideoMode(1080, 720), "Scale");
-
-    sf::Texture texture;
-
-    if( !texture.loadFromFile("screw.jpg") ) {
-        // Handle an error.
-        std::cout << "Can't load the image" << std::endl;
-    }
-
-    sf::Sprite sprite(texture);
-
-    sprite.setScale(0.3,0.3);
-
-    while (window.isOpen())
-    {
-        sf::Event event;
-        while (window.pollEvent(event))
-        {
-            if (event.type == sf::Event::Closed)
-                window.close();
-        }
-
-        window.clear();
-        window.draw(sprite);
-        window.display();
-    }
-
-    return 0;
-}
-*/
