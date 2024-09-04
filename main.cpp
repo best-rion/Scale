@@ -30,12 +30,12 @@ private:
 
     sf::Texture texture;
 
-    void setSpriteScale(sf::Image image) {
+    void setSpriteScale(sf::Texture texture) {
 
-        sf::Vector2u sizeOfImage = image.getSize();
+        sf::Vector2u sizeOfTexture = texture.getSize();
 
-        spriteScale.x = (float) WIDTH / sizeOfImage.x;
-        spriteScale.y = (float) HEIGHT / sizeOfImage.y;
+        spriteScale.x = (float) WIDTH / sizeOfTexture.x;
+        spriteScale.y = (float) HEIGHT / sizeOfTexture.y;
 
         if(spriteScale.x > spriteScale.y) { // minimizing dimension to fit the view
 
@@ -48,33 +48,24 @@ private:
         }
     }
 
+    void setImage(const std::string &filename) {
 
-    sf::Image getImage(const std::string &filename) {
 
-        sf::Image image;
-        image.loadFromFile(filename);
+        if( !texture.loadFromFile(filename) ){
 
-        setSpriteScale(image);
+            std::cout << "Error while loading image file" << std::endl;
+        }
 
-        return image;
-    }
+        setSpriteScale(texture);
 
-    sf::Texture getTexture(const std::string &filename) {
-
-        sf::Image image = getImage(filename);
-
-        sf::Texture texture;
-        texture.loadFromImage(image);
-
-        return texture;
+        this->setTexture(texture);
     }
 
 public:
 
     ImageSprite(const std::string &filename) {
 
-        texture = getTexture(filename);
-        this->setTexture(texture);
+        setImage(filename);
         this->setScale(spriteScale);
 
     }
@@ -87,7 +78,7 @@ int main()
 {
     sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "Scale");
 
-    ImageSprite imageSprite("10001.jpg");
+    ImageSprite imageSprite("screw.jpg");
 
 
     while (window.isOpen())
