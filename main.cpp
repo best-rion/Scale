@@ -26,37 +26,35 @@ class ImageSprite: public sf::Sprite {
 
 private:
 
+// Variables
+
     sf::Vector2f spriteScale;
 
     sf::Texture texture;
 
-    void setSpriteScale(sf::Texture texture) {
+// Methods
+
+    void setSpriteScaleFromTexture() {
 
         sf::Vector2u sizeOfTexture = texture.getSize();
 
         spriteScale.x = (float) WIDTH / sizeOfTexture.x;
         spriteScale.y = (float) HEIGHT / sizeOfTexture.y;
 
-        if(spriteScale.x > spriteScale.y) { // minimizing dimension to fit the view
-
+        if(spriteScale.x > spriteScale.y) // minimizing dimension to fit the view
             spriteScale.x = spriteScale.y;
-
-        }else{
-
+        else
             spriteScale.y = spriteScale.x;
 
-        }
     }
 
     void setImage(const std::string &filename) {
 
 
-        if( !texture.loadFromFile(filename) ){
-
+        if( !texture.loadFromFile(filename) )
             std::cout << "Error while loading image file" << std::endl;
-        }
 
-        setSpriteScale(texture);
+        setSpriteScaleFromTexture();
 
         this->setTexture(texture);
     }
@@ -67,6 +65,7 @@ public:
 
         setImage(filename);
         this->setScale(spriteScale);
+        // this->setPosition(50, 50);
 
     }
 
@@ -96,7 +95,16 @@ int main()
 
                 case sf::Event::MouseWheelScrolled: // Scaling the image on mouse-scroll
 
-                    imageSprite.setScale( vectorMultScalar( imageSprite.getScale() ,  std::pow(1.01, event.mouseWheelScroll.delta * -1) ) );
+                    imageSprite.setScale(
+                        vectorMultScalar(
+                            imageSprite.getScale() ,
+                            std::pow(1.05/* Zoom-Rate */, -event.mouseWheelScroll.delta)
+                        )
+                    );
+                    break;
+
+                default:
+                    break;
 
             }
         }
