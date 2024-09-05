@@ -15,6 +15,11 @@ sf::Vector2f vectorMultScalar(sf::Vector2f v, float s){
     return v;
 }
 
+sf::Vector2f vectorSubstract(sf::Vector2f v1, sf::Vector2f v2){
+
+    return sf::Vector2f(v1.x-v2.x, v1.y-v2.y);
+}
+
 
 class ImageSprite: public sf::Sprite {
 
@@ -22,23 +27,23 @@ private:
 
 // Variables
 
-    sf::Vector2f spriteScale;
+    sf::Vector2f fittingScale; // to fit the view
 
     sf::Texture texture;
 
 // Methods
 
-    void setSpriteScaleFromTexture() {
+    void setfittingScaleFromTexture() {
 
         sf::Vector2u sizeOfTexture = texture.getSize();
 
-        spriteScale.x = (float) (WIDTH - 2*50) / sizeOfTexture.x;
-        spriteScale.y = (float) (HEIGHT - 2*50) / sizeOfTexture.y;
+        fittingScale.x = (float) (WIDTH - 2*150) / sizeOfTexture.x;
+        fittingScale.y = (float) (HEIGHT - 2*150) / sizeOfTexture.y;
 
-        if(spriteScale.x > spriteScale.y) // minimizing dimension to fit the view
-            spriteScale.x = spriteScale.y;
+        if(fittingScale.x > fittingScale.y) // minimizing dimension to fit the view
+            fittingScale.x = fittingScale.y;
         else
-            spriteScale.y = spriteScale.x;
+            fittingScale.y = fittingScale.x;
 
     }
 
@@ -48,25 +53,35 @@ private:
         if( !texture.loadFromFile(filename) )
             std::cout << "Error while loading image file" << std::endl;
 
-        setSpriteScaleFromTexture();
+        setfittingScaleFromTexture();
 
         this->setTexture(texture);
     }
 
 public:
 
-    ImageSprite(const std::string &filename, sf::Vector2f position) {
+// Variables
+
+    float normalizedScale;
+
+// Methods
+
+    ImageSprite(const std::string &filename) {
+
+        normalizedScale = 1.0;
 
         setImage(filename);
-        this->setScale(spriteScale);
-        this->setPosition(position);
+        this->setPosition(150, 150);
+        this->setScale(fittingScale);
 
     }
 
-    void updateScale(float normalizedScale) {
+    void updateScale(float zoomRatio) {
+
+        normalizedScale *= zoomRatio;
 
         this->setScale(
-            vectorMultScalar( spriteScale , normalizedScale )
+            vectorMultScalar( fittingScale , normalizedScale )
         );
     }
 
@@ -74,14 +89,78 @@ public:
 
 
 
+class Button: public sf::RectangleShape {
+
+private:
+
+// Variables
+
+    sf::Texture normal, clicked;
+
+    static short buttonNumber;
+
+public:
+
+// Variables
+
+    bool isClicked;
+
+    Button(const std::string &normalFilename, const std::string &clickedFilename ) {
+
+        isClicked = 0;
+
+        if( !clicked.loadFromFile(clickedFilename) )
+            std::cout << "Error while loading image file for clicked" << std::endl;
+        if( !normal.loadFromFile(normalFilename) )
+            std::cout << "Error while loading image file for normal" << std::endl;
+        this->setPosition( sf::Vector2f(100*(buttonNumber+1),25) );
+        this->setSize( sf::Vector2f(50,50) );
+        this->setTexture(&normal);
+
+        buttonNumber++;
+        std::cout <<buttonNumber<< std::endl;
+
+    }
+
+    void setClickedTexture(){
+        this->setTexture(&clicked, true);
+    }
+
+    void setNormalTexture(){
+        this->setTexture(&normal, true);
+    }
+
+    short getButtonNumber(){
+        return buttonNumber;
+    }
+
+};
+short Button::buttonNumber = 0;
+
+
+class Navbar: public sf::RectangleShape {
+
+public:
+
+    Navbar(float width, float height) {
+
+        this->setSize( sf::Vector2f(width, height) );
+        this->setFillColor( sf::Color(100,100,100) );
+    }
+};
+
+
 int main()
 {
     sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "Scale");
 
+    Button button1( "unitNormal.png", "unitClicked.png");
+    Button button2( "images.jpeg", "screw.jpg");
+    Navbar navbar( WIDTH, 100 );
 
-    sf::Vector2f position(50, 50);
-    float normalizedScale = 1.0;
-    ImageSprite imageSprite("screw.jpg", position);
+
+    ImageSprite imageSprite("screw.jpg");
+
 
     while (window.isOpen())
     {
@@ -100,23 +179,38 @@ int main()
                 {
                     float zoomRatio = std::pow(1.05/* Zoom-Rate */, -event.mouseWheelScroll.delta);
 
-                    normalizedScale *= zoomRatio; // normalizedScale amar lagbe karon pore eta 1 er niche gele ar zoom out korte debo na.
 
                     sf::Vector2f distance;
+                    distance.x = event.mouseWheelScroll.x - imageSprite.getPosition().x;
+                    distance.y = event.mouseWheelScroll.y - imageSprite.getPosition().y;
 
-                    distance.x = event.mouseWheelScroll.x - position.x;
-                    distance.y = event.mouseWheelScroll.y - position.y;
+                    sf::Vector2f newDistance = vectorMultScalar(distance, zoomRatio);
 
-                    sf::Vector2f newDistance = vectorMultScalar(distance, zoomRatio); // ekhane normalizedScale use kora jabe na karon prottekbar cursor position change hocce
+                    imageSprite.setPosition(
+                        event.mouseWheelScroll.x - newDistance.x,
+                        event.mouseWheelScroll.y - newDistance.y
+                    ); // 1. start position changed
 
-                    position.x = event.mouseWheelScroll.x - newDistance.x;
-                    position.y = event.mouseWheelScroll.y - newDistance.y;
-
-                    imageSprite.setPosition(position); // 1. start position changed
-
-                    imageSprite.updateScale(normalizedScale); // 2. scale changed
+                    imageSprite.updateScale(zoomRatio); // 2. scale changed
                     break;
                 }
+
+                case sf::Event::MouseButtonPressed:
+
+                    if(event.mouseButton.x >100 && event.mouseButton.x <150
+                    && event.mouseButton.y >25 && event.mouseButton.y <75 ){
+
+                        if(!button1.isClicked){
+                            button1.isClicked=1;
+                            button1.setClickedTexture();
+                        }else{
+                            button1.isClicked=0;
+                            button1.setNormalTexture();
+                        }
+
+                    }
+                    break;
+
                 default:
                     break;
 
@@ -125,6 +219,9 @@ int main()
 
         window.clear();
         window.draw(imageSprite);
+        window.draw(navbar);
+        window.draw(button1);
+        window.draw(button2);
         window.display();
     }
 
