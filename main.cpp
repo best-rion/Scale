@@ -5,22 +5,20 @@
 #define HEIGHT 720
 #define WIDTH 1080
 
+#define NAV_HEIGHT 80
+#define MARGIN 10
+
+#define ICON_SIZE 40
+
 double cmPerPixel;
 
 double realScale = 1.0;
 
 
 sf::Vector2f vectorMultScalar(sf::Vector2f v, float s){
-
     v.x *= s;
     v.y *= s;
-
     return v;
-}
-
-sf::Vector2f vectorSubstract(sf::Vector2f v1, sf::Vector2f v2){
-
-    return sf::Vector2f(v1.x-v2.x, v1.y-v2.y);
 }
 
 
@@ -53,8 +51,8 @@ private:
 
         sf::Vector2u sizeOfTexture = texture.getSize();
 
-        fittingScale.x = (float) (WIDTH - 2*10) / sizeOfTexture.x;
-        fittingScale.y = (float) (HEIGHT - 2*10 - 80) / sizeOfTexture.y;
+        fittingScale.x = (float) (WIDTH - 2*MARGIN) / sizeOfTexture.x;
+        fittingScale.y = (float) (HEIGHT - 2*MARGIN - NAV_HEIGHT) / sizeOfTexture.y;
 
         if(fittingScale.x > fittingScale.y) // minimizing dimension to fit the view
             fittingScale.x = fittingScale.y;
@@ -84,7 +82,7 @@ public:
     ImageSprite(const std::string &filename) {
 
         setImage(filename);
-        setPosition(10, 80 + 10);
+        setPosition( MARGIN, NAV_HEIGHT + MARGIN );
         setScale(fittingScale);
 
     }
@@ -97,8 +95,6 @@ public:
     }
 
 };
-
-
 
 class Button: public sf::RectangleShape {
 
@@ -125,13 +121,11 @@ public:
         if( !normal.loadFromFile(normalFilename) )
             std::cout << "Error while loading image file for normal" << std::endl;
 
-        setPosition( sf::Vector2f(50+ 70*buttonNumber,20) );
-        setSize( sf::Vector2f(40,40) );
+        setPosition( sf::Vector2f( 50 + 70*buttonNumber,20) );
+        setSize( sf::Vector2f( ICON_SIZE, ICON_SIZE ) );
         setTexture(&normal);
 
         buttonNumber++;
-        std::cout <<buttonNumber<< std::endl;
-
     }
 
     void setClickedTexture(){
@@ -193,11 +187,10 @@ class Line{
 
 public:
 
-    bool firstPointDone;
-    bool secondPointDone;
-
     sf::Vertex endPoints[2];
 
+    bool firstPointDone;
+    bool secondPointDone;
 
     void setColor(sf::Color color){
 
@@ -215,13 +208,9 @@ public:
 
     double getLengthInPX(){
 
-        return std::sqrt(
-            std::pow( ( endPoints[0].position.x - endPoints[1].position.x ), 2 )
-            +
-            std::pow( ( endPoints[0].position.y - endPoints[1].position.y ), 2 )
-
-        );
+        return distance(endPoints[0].position, endPoints[1].position);
     }
+
 
     double getLengthInCM(){
 
@@ -229,6 +218,7 @@ public:
     }
 
     void draw_me( sf::RenderWindow &window ) {
+
         // Drawing line
         if(secondPointDone){
 
@@ -242,10 +232,6 @@ public:
             window.draw(endPoints,2,sf::Lines);
         }
     }
-
-    void updateLine(sf::Event event){
-
-    }
 };
 
 Line measurementLine;
@@ -255,17 +241,19 @@ void createMeasurementLine(sf::Event event) {
     if (event.type == sf::Event::MouseButtonPressed){
 
         if(!measurementLine.firstPointDone){
+
            measurementLine.endPoints[0].position.x = event.mouseButton.x;
            measurementLine.endPoints[0].position.y = event.mouseButton.y;
 
            measurementLine.firstPointDone = true;
 
            measurementLine.secondPointDone = false;
+
         }else{
            measurementLine.endPoints[1].position.x = event.mouseButton.x;
            measurementLine.endPoints[1].position.y = event.mouseButton.y;
 
-           measurementLine.firstPointDone = false;
+           measurementLine.firstPointDone = false; // firstPoint of the NEXT line is not done
 
            measurementLine.secondPointDone = true;
 
@@ -398,7 +386,6 @@ public:
     void addPoint( sf::Vector2f point ){
 
         points[pointCount].setPosition( point );
-
         pointCount++;
 
         if ( pointCount == 3 ) {
@@ -438,9 +425,6 @@ public:
 
 };
 
-
-
-
 Circle measurementCircle;
 
 
@@ -463,7 +447,8 @@ int main()
     Button unitButton( "unitNormal.png", "unitClicked.png");
     Button lineButton( "lineNormal.png", "lineClicked.png");
     Button circleButton( "circleNormal.png", "circleClicked.png");
-    Navbar navbar( WIDTH, 80 );
+
+    Navbar navbar( WIDTH, NAV_HEIGHT );
 
     ImageSprite imageSprite("coin.jpg");
 
@@ -492,7 +477,7 @@ int main()
 
                     realScale *= zoomRatio;
 
-                    if ( unitLine.secondPointDone ){
+                    if ( unitLine.secondPointDone ){ // cmPerPixel doesn't exist before unitLine
 
                         cmPerPixel /= zoomRatio;
 
@@ -561,6 +546,8 @@ int main()
 
                 // UPDATING Circle WHILE ZOOMING
 
+                    // center
+
                     distance.x = event.mouseWheelScroll.x - measurementCircle.center.x;
                     distance.y = event.mouseWheelScroll.y - measurementCircle.center.y;
 
@@ -568,6 +555,8 @@ int main()
 
                     measurementCircle.center.x = event.mouseWheelScroll.x - newDistance.x;
                     measurementCircle.center.y = event.mouseWheelScroll.y - newDistance.y;
+
+                    // radius
 
                     measurementCircle.radius *= zoomRatio;
                     measurementCircle.update();

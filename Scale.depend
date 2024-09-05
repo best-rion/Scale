@@ -422,7 +422,7 @@
 	<SFML/Graphics/Drawable.hpp>
 	<SFML/Window/GlResource.hpp>
 
-1725544163 source:/home/hossain/Desktop/sfml_projects/Scale1/main.cpp
+1725547552 source:/home/hossain/Desktop/sfml_projects/Scale1/main.cpp
 	<SFML/Graphics.hpp>
 	<iostream>
 	<cmath>
