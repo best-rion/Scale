@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1725391664 source:/home/hossain/Desktop/sfml_projects/Scale/main.cpp
+1725549644 source:/home/hossain/Desktop/sfml_projects/Scale/main.cpp
 	<SFML/Graphics.hpp>
 	<iostream>
 	<cmath>
@@ -421,9 +421,4 @@
 	<SFML/Graphics/PrimitiveType.hpp>
 	<SFML/Graphics/Drawable.hpp>
 	<SFML/Window/GlResource.hpp>
-
-1725547552 source:/home/hossain/Desktop/sfml_projects/Scale1/main.cpp
-	<SFML/Graphics.hpp>
-	<iostream>
-	<cmath>
 

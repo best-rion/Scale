@@ -444,9 +444,9 @@ int main()
 {
     sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "Scale");
 
-    Button unitButton( "unitNormal.png", "unitClicked.png");
-    Button lineButton( "lineNormal.png", "lineClicked.png");
-    Button circleButton( "circleNormal.png", "circleClicked.png");
+    Button unitButton( "icons/unitNormal.png", "icons/unitClicked.png");
+    Button lineButton( "icons/lineNormal.png", "icons/lineClicked.png");
+    Button circleButton( "icons/circleNormal.png", "icons/circleClicked.png");
 
     Navbar navbar( WIDTH, NAV_HEIGHT );
 
