@@ -2,7 +2,7 @@
 
 This is a project I was planning to start since last semester. Scale is a simple measurement tool, created with SFML library of C++. It calculates dimensions of small parts. It takes reference from a line and measures other dimensions with respect to it. And boy! It is very precise.
 
-* How to use it?
+<h3>How to use it?</h3>
 
 Click a photo of the object you want to measure. Before clicking the photo put a 1cm line beside the object. Try to keep the line on the same height level as the object. Cut and paste the photo on our project's folder. Run the code and Scale's window will open. Align the reference line (Green) with our 1cm line. Then you are ready to calculate any length on the photo.
 
