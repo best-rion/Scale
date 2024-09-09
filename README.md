@@ -1,4 +1,4 @@
-#Scale
+# Scale
 
 This is a project I was planning to start since last semester. Scale is a simple measurement tool, created with SFML library of C++. It calculates dimensions of small parts. It takes reference from a line and measures other dimensions with respect to it. And boy! It is very precise.
 
