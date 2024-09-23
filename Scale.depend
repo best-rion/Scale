@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1727115865 source:/home/hossain/Desktop/Scale/main.cpp
+1727117672 source:/home/hossain/Desktop/Scale/main.cpp
 	<SFML/Graphics.hpp>
 	<iostream>
 	<cmath>

@@ -10,47 +10,47 @@
 
 #define ICON_SIZE 40
 
+sf::Color unitColor(0,255,0), lineColor(255,0,0), circleColor(0,255,255) ,angleColor(255,0,255);
+
+
+
 double cmPerPixel;
 
 double dynamicScale = 1.0;
 
 
-sf::Vector2f vectorMultScalar(sf::Vector2f v, float s){
+sf::Vector2f vectorXscalar(sf::Vector2f v, float s)
+{
     v.x *= s;
     v.y *= s;
     return v;
 }
 
-float square(float a) {
-    return std::pow(a,2);
+
+
+float sq(float a) {return a*a;}
+
+
+
+float distance( sf::Vector2f p1, sf::Vector2f p2 )
+{
+    return std::sqrt( sq(p1.x-p2.x) + sq(p1.y-p2.y) );
 }
 
 
-float distance( sf::Vector2f p1, sf::Vector2f p2 ) {
 
-    return std::sqrt(
-        square( p1.x - p2.x )
-        +
-        square( p1.y - p2.y )
-
-    );
-}
-
-float slopeAngle(sf::Vector2f p1, sf::Vector2f p2) {
-
-    if( p1.x - p2.x == 0 ) {
-
+float slopeAngle(sf::Vector2f p1, sf::Vector2f p2)
+{
+    if (p1.x - p2.x == 0)
         return std::atan(INFINITY);
-
-    } else {
-
+    else
         return std::atan( (p1.y-p2.y) / (p1.x-p2.x) );
-    }
 }
 
 
 
-class ImageSprite: public sf::Sprite {
+class ImageSprite: public sf::Sprite
+{
 
 private:
 
@@ -62,7 +62,8 @@ private:
 
 // Methods
 
-    void setstaticScaleFromTexture() {
+    void setStaticScaleFromTexture()
+    {
 
         sf::Vector2u sizeOfTexture = texture.getSize();
 
@@ -82,7 +83,7 @@ private:
         if( !texture.loadFromFile(filename) )
             std::cout << "Error while loading image file" << std::endl;
 
-        setstaticScaleFromTexture();
+        setStaticScaleFromTexture();
 
         setTexture(texture);
     }
@@ -104,9 +105,7 @@ public:
 
     void updateScale(float zoomRatio) {
 
-        setScale(
-            vectorMultScalar( staticScale , dynamicScale )
-        );
+        setScale( vectorXscalar(staticScale ,dynamicScale) );
     }
 
 };
@@ -117,7 +116,8 @@ public:
 
 //.. RESETABLE INTERFACE ..//
 
-class Resetable {
+class Resetable
+{
 
 public:
 
@@ -128,15 +128,28 @@ public:
 
 
 
-class Button: public sf::RectangleShape {
+class Button: public sf::RectangleShape
+{
 
 private:
 
 // Variables
 
-    sf::Texture normal, clicked;
+    sf::Texture imageTexture;
 
     static short buttonNumber;
+
+    sf::Color color;
+
+// Methods
+
+    void setClickedColor(){
+        this->setFillColor(color);
+    }
+
+    void setNormalColor(){
+        this->setFillColor(sf::Color(255,255,255));
+    }
 
 public:
 
@@ -144,33 +157,25 @@ public:
 
     bool isClicked;
 
-    Button(const std::string &normalFilename, const std::string &clickedFilename ) {
+
+// Methods
+
+    Button(const std::string &filename, sf::Color color) {
+
+        this->color = color;
 
         isClicked = 0;
 
-        if( !clicked.loadFromFile(clickedFilename) )
-            std::cout << "Error while loading image file for clicked" << std::endl;
-        if( !normal.loadFromFile(normalFilename) )
-            std::cout << "Error while loading image file for normal" << std::endl;
+        if( !imageTexture.loadFromFile(filename) )
+            std::cout << "Error while loading image file for imageTexture" << std::endl;
 
         setPosition( sf::Vector2f( 50 + 70*buttonNumber,20) );
         setSize( sf::Vector2f( ICON_SIZE, ICON_SIZE ) );
-        setTexture(&normal);
+        setTexture(&imageTexture);
 
         buttonNumber++;
     }
 
-    void setClickedTexture(){
-        setTexture(&clicked, true);
-    }
-
-    void setNormalTexture(){
-        setTexture(&normal, true);
-    }
-
-    short getButtonNumber(){
-        return buttonNumber;
-    }
 
     bool checkIfClicked( sf::Event event, Resetable &resetableObject ) {
 
@@ -184,8 +189,7 @@ public:
 
             if(!isClicked){
                 isClicked=1;
-                setClickedTexture();
-
+                setClickedColor();
 
                 resetableObject.reset(); // Reset
 
@@ -193,7 +197,7 @@ public:
 
             }else{
                 isClicked=0;
-                setNormalTexture();
+                setNormalColor();
                 return 0;
             }
 
@@ -396,24 +400,24 @@ public:
         float a1 = -2 * ( points[0].position.x - points[1].position.x );
         float b1 = -2 * ( points[0].position.y - points[1].position.y );
         float c1 =
-            square(points[0].position.x)
+            sq(points[0].position.x)
             -
-            square(points[1].position.x)
+            sq(points[1].position.x)
             +
-            square(points[0].position.y)
+            sq(points[0].position.y)
             -
-            square(points[1].position.y);
+            sq(points[1].position.y);
 
         float a2 = -2 * ( points[1].position.x - points[2].position.x );
         float b2 = -2 * ( points[1].position.y - points[2].position.y );
         float c2 =
-            square(points[1].position.x)
+            sq(points[1].position.x)
             -
-            square(points[2].position.x)
+            sq(points[2].position.x)
             +
-            square(points[1].position.y)
+            sq(points[1].position.y)
             -
-            square(points[2].position.y);
+            sq(points[2].position.y);
         float x = (b1*c2 - b2*c1) / (a1*b2 - a2*b1);
         float y = (c1*a2 - c2*a1) / (a1*b2 - a2*b1);
 
@@ -541,11 +545,11 @@ public:
 
         if (
 
-            square( distance(verteces[0].position, verteces[2].position) )
+            sq( distance(verteces[0].position, verteces[2].position) )
             <
-            square( distance(verteces[0].position, verteces[1].position) )
+            sq( distance(verteces[0].position, verteces[1].position) )
             +
-            square( distance(verteces[1].position, verteces[2].position) )
+            sq( distance(verteces[1].position, verteces[2].position) )
 
         ) { // Then it is an Acute angle
 
@@ -635,10 +639,10 @@ int main()
 {
     sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "Scale");
 
-    Button unitButton( "icons/unitNormal.png", "icons/unitClicked.png");
-    Button lineButton( "icons/lineNormal.png", "icons/lineClicked.png");
-    Button circleButton( "icons/circleNormal.png", "icons/circleClicked.png");
-    Button angleButton( "icons/angleNormal.png", "icons/angleClicked.png");
+    Button unitButton( "icons/unitNormal.png", unitColor);
+    Button lineButton( "icons/lineNormal.png", lineColor);
+    Button circleButton( "icons/circleNormal.png", circleColor);
+    Button angleButton( "icons/angleNormal.png", angleColor);
 
     Navbar navbar( WIDTH, NAV_HEIGHT );
 
@@ -682,7 +686,7 @@ int main()
                     distance.x = event.mouseWheelScroll.x - imageSprite.getPosition().x;
                     distance.y = event.mouseWheelScroll.y - imageSprite.getPosition().y;
 
-                    sf::Vector2f newDistance = vectorMultScalar(distance, zoomRatio);
+                    sf::Vector2f newDistance = vectorXscalar(distance, zoomRatio);
 
                     imageSprite.setPosition(
                         event.mouseWheelScroll.x - newDistance.x,
@@ -699,7 +703,7 @@ int main()
                         distance.x = event.mouseWheelScroll.x - unitLine.endPoints[i].position.x;
                         distance.y = event.mouseWheelScroll.y - unitLine.endPoints[i].position.y;
 
-                        newDistance = vectorMultScalar(distance, zoomRatio);
+                        newDistance = vectorXscalar(distance, zoomRatio);
 
                         unitLine.endPoints[i].position.x = event.mouseWheelScroll.x - newDistance.x;
                         unitLine.endPoints[i].position.y = event.mouseWheelScroll.y - newDistance.y;
@@ -712,7 +716,7 @@ int main()
                         distance.x = event.mouseWheelScroll.x - measurementLine.endPoints[i].position.x;
                         distance.y = event.mouseWheelScroll.y - measurementLine.endPoints[i].position.y;
 
-                        newDistance = vectorMultScalar(distance, zoomRatio);
+                        newDistance = vectorXscalar(distance, zoomRatio);
 
                         measurementLine.endPoints[i].position.x = event.mouseWheelScroll.x - newDistance.x;
                         measurementLine.endPoints[i].position.y = event.mouseWheelScroll.y - newDistance.y;
@@ -726,7 +730,7 @@ int main()
                         distance.x = event.mouseWheelScroll.x - measurementCircle.points[i].position.x;
                         distance.y = event.mouseWheelScroll.y - measurementCircle.points[i].position.y;
 
-                        newDistance = vectorMultScalar(distance, zoomRatio);
+                        newDistance = vectorXscalar(distance, zoomRatio);
 
                         measurementCircle.points[i].setPosition(
                             sf::Vector2f(
@@ -743,7 +747,7 @@ int main()
                     distance.x = event.mouseWheelScroll.x - measurementCircle.center.x;
                     distance.y = event.mouseWheelScroll.y - measurementCircle.center.y;
 
-                    newDistance = vectorMultScalar(distance, zoomRatio);
+                    newDistance = vectorXscalar(distance, zoomRatio);
 
                     measurementCircle.center.x = event.mouseWheelScroll.x - newDistance.x;
                     measurementCircle.center.y = event.mouseWheelScroll.y - newDistance.y;
@@ -772,7 +776,7 @@ int main()
                         distance.x = event.mouseWheelScroll.x - measurementAngle.verteces[i].position.x;
                         distance.y = event.mouseWheelScroll.y - measurementAngle.verteces[i].position.y;
 
-                        newDistance = vectorMultScalar(distance, zoomRatio);
+                        newDistance = vectorXscalar(distance, zoomRatio);
 
                         measurementAngle.verteces[i].position.x = event.mouseWheelScroll.x - newDistance.x;
                         measurementAngle.verteces[i].position.y = event.mouseWheelScroll.y - newDistance.y;
