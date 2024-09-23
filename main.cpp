@@ -12,7 +12,7 @@
 
 double cmPerPixel;
 
-double realScale = 1.0;
+double dynamicScale = 1.0;
 
 
 sf::Vector2f vectorMultScalar(sf::Vector2f v, float s){
@@ -56,23 +56,23 @@ private:
 
 // Variables
 
-    sf::Vector2f fittingScale; // to fit the view
+    sf::Vector2f staticScale; // to fit the view
 
     sf::Texture texture;
 
 // Methods
 
-    void setfittingScaleFromTexture() {
+    void setstaticScaleFromTexture() {
 
         sf::Vector2u sizeOfTexture = texture.getSize();
 
-        fittingScale.x = (float) (WIDTH - 2*MARGIN) / sizeOfTexture.x;
-        fittingScale.y = (float) (HEIGHT - 2*MARGIN - NAV_HEIGHT) / sizeOfTexture.y;
+        staticScale.x = (float) (WIDTH - 2*MARGIN) / sizeOfTexture.x;
+        staticScale.y = (float) (HEIGHT - 2*MARGIN - NAV_HEIGHT) / sizeOfTexture.y;
 
-        if(fittingScale.x > fittingScale.y) // minimizing dimension to fit the view
-            fittingScale.x = fittingScale.y;
+        if(staticScale.x > staticScale.y) // minimizing dimension to fit the view
+            staticScale.x = staticScale.y;
         else
-            fittingScale.y = fittingScale.x;
+            staticScale.y = staticScale.x;
 
     }
 
@@ -82,7 +82,7 @@ private:
         if( !texture.loadFromFile(filename) )
             std::cout << "Error while loading image file" << std::endl;
 
-        setfittingScaleFromTexture();
+        setstaticScaleFromTexture();
 
         setTexture(texture);
     }
@@ -98,14 +98,14 @@ public:
 
         setImage(filename);
         setPosition( MARGIN, NAV_HEIGHT + MARGIN );
-        setScale(fittingScale);
+        setScale(staticScale);
 
     }
 
     void updateScale(float zoomRatio) {
 
         setScale(
-            vectorMultScalar( fittingScale , realScale )
+            vectorMultScalar( staticScale , dynamicScale )
         );
     }
 
@@ -373,6 +373,8 @@ public:
     Point points[3];
     short pointCount;
 
+    Point centerPoint;
+
     void reset() {
 
         pointCount = 0;
@@ -436,7 +438,8 @@ public:
         points[pointCount].setPosition( point );
         pointCount++;
 
-        if ( pointCount == 3 ) {
+        if ( pointCount == 3 )
+        {
 
             calculateCenter();
             calculateRadius();
@@ -445,6 +448,11 @@ public:
             setPosition( center - sf::Vector2f(radius, radius) );
 
             std::cout << "Radius of curve = " << getRadiusInCM()*10 << " mm" << std::endl;
+
+
+
+            centerPoint.setPosition(center);
+            centerPoint.setFillColor(sf::Color(255,127,0));
 
 
         }
@@ -463,7 +471,11 @@ public:
         if(pointCount == 3) {
 
             window.draw(*this);
+
+            centerPoint.draw_me(window);
         }
+
+        drawPoints(window);
     }
 
     void update() {
@@ -655,7 +667,7 @@ int main()
 
                     float zoomRatio = std::pow(1.05/* Zoom-Rate */, -event.mouseWheelScroll.delta);
 
-                    realScale *= zoomRatio;
+                    dynamicScale *= zoomRatio;
 
                     if ( unitLine.secondPointDone ){ // cmPerPixel doesn't exist before unitLine
 
@@ -742,6 +754,17 @@ int main()
                     measurementCircle.update();
 
 
+                    // centerPoint
+
+                    measurementCircle.centerPoint.setPosition
+                    (
+                        sf::Vector2f(
+                            event.mouseWheelScroll.x - newDistance.x,
+                            event.mouseWheelScroll.y - newDistance.y
+                        )
+                    );
+
+
                 // UPDATING Angle Lines WHILE ZOOMING
 
                     for(short i=0; i<3; i++){
@@ -795,8 +818,6 @@ int main()
         measurementLine.draw_me(window);
         measurementCircle.draw_me(window);
         measurementAngle.draw_me(window);
-
-        measurementCircle.drawPoints(window);
 
         window.draw(navbar);
         window.draw(unitButton);
