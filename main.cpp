@@ -10,13 +10,18 @@
 
 #define ICON_SIZE 40
 
-sf::Color unitColor(0,255,0), lineColor(255,0,0), circleColor(0,255,255) ,angleColor(255,0,255);
+sf::Color unitColor(0,255,0),
+            lineColor(255,0,0),
+            circleColor(0,255,255),
+            angleColor(255,0,255);
 
 
 
 double cmPerPixel;
 
 double dynamicScale = 1.0;
+
+float zoom;
 
 
 sf::Vector2f vectorXscalar(sf::Vector2f v, float s)
@@ -103,7 +108,7 @@ public:
 
     }
 
-    void updateScale(float zoomRatio) {
+    void updateScale(float zoom) {
 
         setScale( vectorXscalar(staticScale ,dynamicScale) );
     }
@@ -143,13 +148,9 @@ private:
 
 // Methods
 
-    void setClickedColor(){
-        this->setFillColor(color);
-    }
+    void setClickedColor() { this->setFillColor(color); }
 
-    void setNormalColor(){
-        this->setFillColor(sf::Color(255,255,255));
-    }
+    void setNormalColor() { this->setFillColor(sf::Color(255,255,255)); }
 
 public:
 
@@ -160,11 +161,12 @@ public:
 
 // Methods
 
-    Button(const std::string &filename, sf::Color color) {
+    Button(const std::string &filename, sf::Color color)
+    {
 
         this->color = color;
 
-        isClicked = 0;
+        isClicked = false;
 
         if( !imageTexture.loadFromFile(filename) )
             std::cout << "Error while loading image file for imageTexture" << std::endl;
@@ -177,31 +179,36 @@ public:
     }
 
 
-    bool checkIfClicked( sf::Event event, Resetable &resetableObject ) {
-
+    bool checkIfClicked( sf::Event event, Resetable &resetableObject )
+    {
         sf::Vector2f position = getPosition();
 
         sf::Vector2f _size = getSize();
 
         if( event.mouseButton.x > position.x && event.mouseButton.x < (position.x + _size.x)
-         && event.mouseButton.y > position.y && event.mouseButton.y < (position.y + _size.y) ) {
+         && event.mouseButton.y > position.y && event.mouseButton.y < (position.y + _size.y) )
+        {
 
 
-            if(!isClicked){
-                isClicked=1;
+            if(!isClicked)
+            {
+                isClicked = true;
                 setClickedColor();
 
                 resetableObject.reset(); // Reset
 
                 return 1;
-
-            }else{
-                isClicked=0;
+            }
+            else
+            {
+                isClicked = false;
                 setNormalColor();
                 return 0;
             }
 
-        }else{
+        }
+        else
+        {
             return 0;
         }
     }
@@ -210,12 +217,12 @@ public:
 short Button::buttonNumber = 0;
 
 
-class Navbar: public sf::RectangleShape {
-
+class Navbar: public sf::RectangleShape
+{
 public:
 
-    Navbar(float width, float height) {
-
+    Navbar(float width, float height)
+    {
         setSize( sf::Vector2f(width, height) );
         setFillColor( sf::Color(60,80,90) );
     }
@@ -223,8 +230,8 @@ public:
 
 
 
-class Line: public Resetable{
-
+class Line: public Resetable
+{
 public:
 
     sf::Vertex endPoints[2];
@@ -232,46 +239,45 @@ public:
     bool firstPointDone;
     bool secondPointDone;
 
-    void reset() {
-
+    void reset()
+    {
         firstPointDone = false;
         secondPointDone = false;
-
     }
 
-    void setColor(sf::Color color){
-
+    void setColor(sf::Color color)
+    {
         endPoints[0].color= color;
         endPoints[1].color= color;
     }
 
-    Line() {
-
-        setColor( sf::Color(255,0,0) );
+    Line( sf::Color color )
+    {
+        setColor( color );
 
         reset();
-
     }
 
-    double getLengthInPX(){
-
+    double getLengthInPX()
+    {
         return distance(endPoints[0].position, endPoints[1].position);
     }
 
 
-    double getLengthInCM(){
-
+    double getLengthInCM()
+    {
         return getLengthInPX()*cmPerPixel;
     }
 
-    void draw_me( sf::RenderWindow &window ) {
-
+    void draw_me( sf::RenderWindow &window )
+    {
         // Drawing line
-        if(secondPointDone){
-
+        if(secondPointDone)
+        {
             window.draw(endPoints,2,sf::Lines);
-
-        }else if( firstPointDone && !secondPointDone ){
+        }
+        else if( firstPointDone && !secondPointDone )
+        {
             sf::Mouse mouse;
             endPoints[1].position.x = (float) mouse.getPosition(window).x;
             endPoints[1].position.y = (float) mouse.getPosition(window).y;
@@ -281,61 +287,65 @@ public:
     }
 };
 
-Line measurementLine;
+Line line( lineColor );
 
-void createMeasurementLine(sf::Event event) {
+void createLine(sf::Event event)
+{
+    if (event.type == sf::Event::MouseButtonPressed)
+    {
+        if(!line.firstPointDone)
+        {
+           line.endPoints[0].position.x = event.mouseButton.x;
+           line.endPoints[0].position.y = event.mouseButton.y;
 
-    if (event.type == sf::Event::MouseButtonPressed){
+           line.firstPointDone = true;
 
-        if(!measurementLine.firstPointDone){
-
-           measurementLine.endPoints[0].position.x = event.mouseButton.x;
-           measurementLine.endPoints[0].position.y = event.mouseButton.y;
-
-           measurementLine.firstPointDone = true;
-
-           measurementLine.secondPointDone = false;
-
-        }else{
-           measurementLine.endPoints[1].position.x = event.mouseButton.x;
-           measurementLine.endPoints[1].position.y = event.mouseButton.y;
-
-           measurementLine.firstPointDone = false;
-
-           measurementLine.secondPointDone = true;
-
-           // Showing line length real
-
-           std::cout << "Length of line = " << measurementLine.getLengthInCM() * 10 << " mm" << std::endl;
+           line.secondPointDone = false;
         }
+        else
+        {
+           line.endPoints[1].position.x = event.mouseButton.x;
+           line.endPoints[1].position.y = event.mouseButton.y;
 
+           line.firstPointDone = false;
+
+           line.secondPointDone = true;
+
+           // Showing line length
+           std::cout << "Length of line = " << line.getLengthInCM() * 10 << " mm" << std::endl;
+        }
     }
 }
 
-void createUnitLine(sf::Event event, Line &unitLine) {
 
-    if (event.type == sf::Event::MouseButtonPressed){
 
-        if(!unitLine.firstPointDone){
-           unitLine.endPoints[0].position.x = event.mouseButton.x;
-           unitLine.endPoints[0].position.y = event.mouseButton.y;
+Line unit( unitColor );
 
-           unitLine.firstPointDone = true;
+void createUnit(sf::Event event)
+{
+    if (event.type == sf::Event::MouseButtonPressed)
+    {
+        if(!unit.firstPointDone)
+        {
+           unit.endPoints[0].position.x = event.mouseButton.x;
+           unit.endPoints[0].position.y = event.mouseButton.y;
 
-           unitLine.secondPointDone = false;
-        }else{
-           unitLine.endPoints[1].position.x = event.mouseButton.x;
-           unitLine.endPoints[1].position.y = event.mouseButton.y;
+           unit.firstPointDone = true;
 
-           unitLine.firstPointDone = false;
+           unit.secondPointDone = false;
+        }
+        else
+        {
+           unit.endPoints[1].position.x = event.mouseButton.x;
+           unit.endPoints[1].position.y = event.mouseButton.y;
 
-           unitLine.secondPointDone = true;
+           unit.firstPointDone = false;
+
+           unit.secondPointDone = true;
 
            // setting Unit
-
-           cmPerPixel = 1.0/unitLine.getLengthInPX();
+           cmPerPixel = 1.0/unit.getLengthInPX();
         }
-
     }
 }
 
@@ -343,33 +353,38 @@ void createUnitLine(sf::Event event, Line &unitLine) {
 
 // CIRCLE
 
-class Point: public sf::CircleShape{
-
+class Point: public sf::CircleShape
+{
 public:
 
     sf::Vector2f position;
 
-    Point() {
+    Point()
+    {
         setPointCount(4);
         setRadius(4);
         setFillColor(sf::Color(255,255,0));
     }
 
-    void setPosition(sf::Vector2f center) {
+    void setPosition(sf::Vector2f center)
+    {
         position = center;
         CircleShape::setPosition( sf::Vector2f(center.x-getRadius(), center.y-getRadius()) );
     }
 
-    void draw_me(sf::RenderWindow &window) {
+    void draw_me(sf::RenderWindow &window)
+    {
         window.draw(*this);
     }
 };
 
 
 
-class Circle: public sf::CircleShape, public Resetable  {
-
+class Circle: public sf::CircleShape, public Resetable
+{
 public:
+
+// Variables
 
     sf::Vector2f center;
     double radius;
@@ -379,132 +394,125 @@ public:
 
     Point centerPoint;
 
-    void reset() {
+// Methods
 
+    void reset()
+    {
         pointCount = 0;
     }
 
-    Circle() {
-
+    Circle()
+    {
         reset();
 
-        setOutlineColor(sf::Color(0,255,255));
+        setOutlineColor( circleColor );
         setOutlineThickness(2);
         setFillColor(sf::Color(0,0,0,0));
     }
 
 
 
-    void calculateCenter() {
+    void calculateCenter()
+    {
 
         float a1 = -2 * ( points[0].position.x - points[1].position.x );
         float b1 = -2 * ( points[0].position.y - points[1].position.y );
-        float c1 =
-            sq(points[0].position.x)
-            -
-            sq(points[1].position.x)
+        float c1 = // x1^2 - x2^2 + y1^2 - y2^2
+            sq(points[0].position.x) - sq(points[1].position.x)
             +
-            sq(points[0].position.y)
-            -
-            sq(points[1].position.y);
+            sq(points[0].position.y) - sq(points[1].position.y);
+
+
 
         float a2 = -2 * ( points[1].position.x - points[2].position.x );
         float b2 = -2 * ( points[1].position.y - points[2].position.y );
-        float c2 =
-            sq(points[1].position.x)
-            -
-            sq(points[2].position.x)
+        float c2 = // x2^2 - x3^2 + y2^2 - y3^2
+            sq(points[1].position.x) - sq(points[2].position.x)
             +
-            sq(points[1].position.y)
-            -
-            sq(points[2].position.y);
+            sq(points[1].position.y) - sq(points[2].position.y);
+
+
+
         float x = (b1*c2 - b2*c1) / (a1*b2 - a2*b1);
         float y = (c1*a2 - c2*a1) / (a1*b2 - a2*b1);
 
 
         center = sf::Vector2f(x,y);
-
     }
 
-    void calculateRadius() {
-
+    void calculateRadius()
+    {
         radius = distance(center, points[0].position);
-
     }
 
-    double getRadiusInCM(){
+    double getRadiusInCM()
+    {
         return radius * cmPerPixel;
     }
 
 
-    void addPoint( sf::Vector2f point ){
-
+    void addPoint( sf::Vector2f point )
+    {
         points[pointCount].setPosition( point );
         pointCount++;
 
         if ( pointCount == 3 )
         {
-
             calculateCenter();
             calculateRadius();
 
             setRadius(radius);
             setPosition( center - sf::Vector2f(radius, radius) );
 
+
+            // Showing circle's radius
             std::cout << "Radius of curve = " << getRadiusInCM()*10 << " mm" << std::endl;
 
-
-
+            // Initialize centerPoint
             centerPoint.setPosition(center);
             centerPoint.setFillColor(sf::Color(255,127,0));
-
-
         }
     }
 
 
-    void drawPoints( sf::RenderWindow &window ) {
-
-        for( short i=0; i<pointCount; i++){
+    void drawPoints( sf::RenderWindow &window )
+    {
+        for( short i=0; i<pointCount; i++)
             points[i].draw_me(window);
-        }
     }
 
-    void draw_me( sf::RenderWindow &window ) {
-
-        if(pointCount == 3) {
-
+    void draw_me( sf::RenderWindow &window )
+    {
+        if(pointCount == 3)
+        {
             window.draw(*this);
 
             centerPoint.draw_me(window);
         }
-
         drawPoints(window);
     }
 
-    void update() {
+    void update()
+    {
         setPosition(center - sf::Vector2f(radius, radius));
         setRadius(radius);
     }
-
 };
 
-Circle measurementCircle;
+Circle circle;
 
-
-void createCircle( sf::Event event ) {
-
-    if (event.type == sf::Event::MouseButtonPressed){
-
-        measurementCircle.addPoint( sf::Vector2f(event.mouseButton.x, event.mouseButton.y) );
-
-    }
-
+void createCircle( sf::Event event )
+{
+    if (event.type == sf::Event::MouseButtonPressed)
+        circle.addPoint( sf::Vector2f(event.mouseButton.x, event.mouseButton.y) );
 }
 
-class Angle: public Resetable  {
+class Angle: public Resetable
+{
 
 public:
+
+// Variables
 
     float angle;
 
@@ -514,8 +522,10 @@ public:
 
     bool firstPointDone, secondPointDone, thirdPointDone;
 
-    void reset() {
+// Methods
 
+    void reset()
+    {
         vertexCount = 0;
 
         firstPointDone = false;
@@ -523,19 +533,16 @@ public:
         thirdPointDone = false;
     }
 
-    Angle() {
-
+    Angle()
+    {
         reset();
 
-        for (short i=0; i<3; i++) {
-
-            verteces[i].color = sf::Color(255,0,255);
-        }
-
+        for (short i=0; i<3; i++)
+            verteces[i].color = angleColor;
     }
 
-    void calculateAngle() {
-
+    void calculateAngle()
+    {
         float slopeAngle01 = slopeAngle(verteces[0].position, verteces[1].position);
         float slopeAngle12 = slopeAngle(verteces[1].position, verteces[2].position);
 
@@ -543,75 +550,72 @@ public:
 
         angle = angle * 180 / 3.14159;
 
-        if (
+        if ( // c^2 < a^2 + b^2 [acute angle] (pythagoras)
 
             sq( distance(verteces[0].position, verteces[2].position) )
             <
             sq( distance(verteces[0].position, verteces[1].position) )
             +
             sq( distance(verteces[1].position, verteces[2].position) )
+        )
+        { // Then it is an Acute angle
 
-        ) { // Then it is an Acute angle
-
-            if (angle > 90) {
+            if (angle > 90)
                 angle = 180 - angle; // Less than 90 degree
-            }
-
-        } else { // Else it is an Obtuse angle
-
-            if (angle < 90) {
-                angle = 180 - angle; // More than 90 degree
-            }
-
         }
+        else
+        { // Else it is an Obtuse angle
 
+            if (angle < 90)
+                angle = 180 - angle; // More than 90 degree
+        }
     }
 
 
-    void addPoint( sf::Vector2f position ){
-
+    void addPoint( sf::Vector2f position )
+    {
         verteces[vertexCount].position = position;
         vertexCount++;
 
-        if ( vertexCount == 3 ) {
-
+        if ( vertexCount == 3 )
+        {
             thirdPointDone = true;
 
             calculateAngle();
 
+            // Showing Angle
             std::cout << "Angle = " << angle << " Degree" << std::endl;
-
-        } else if ( vertexCount == 1 ) {
-
+        }
+        else if ( vertexCount == 1 )
+        {
             firstPointDone = true;
-
-        } else if ( vertexCount == 2 ) {
-
+        }
+        else if ( vertexCount == 2 )
+        {
             secondPointDone = true;
-
         }
     }
 
-    void draw_me( sf::RenderWindow &window ) {
-
+    void draw_me( sf::RenderWindow &window )
+    {
         sf::Mouse mouse;
 
         // Drawing line
 
-        if (thirdPointDone) {
-
+        if (thirdPointDone)
+        {
             window.draw(verteces,2,sf::Lines);
             window.draw(verteces+1,2,sf::Lines);
-
-        } else if(firstPointDone && !secondPointDone) {
-
+        }
+        else if(firstPointDone && !secondPointDone)
+        {
             verteces[1].position.x = (float) mouse.getPosition(window).x;
             verteces[1].position.y = (float) mouse.getPosition(window).y;
 
             window.draw(verteces,2,sf::Lines);
-
-        } else if( secondPointDone && !thirdPointDone ) {
-
+        }
+        else if( secondPointDone && !thirdPointDone )
+        {
             verteces[2].position.x = (float) mouse.getPosition(window).x;
             verteces[2].position.y = (float) mouse.getPosition(window).y;
 
@@ -619,19 +623,14 @@ public:
             window.draw(verteces+1,2,sf::Lines);
         }
     }
-
 };
 
-Angle measurementAngle;
+Angle angle;
 
-void createAngle( sf::Event event ) {
-
-    if (event.type == sf::Event::MouseButtonPressed){
-
-        measurementAngle.addPoint( sf::Vector2f(event.mouseButton.x, event.mouseButton.y) );
-
-    }
-
+void createAngle( sf::Event event )
+{
+    if (event.type == sf::Event::MouseButtonPressed)
+        angle.addPoint( sf::Vector2f(event.mouseButton.x, event.mouseButton.y) );
 }
 
 
@@ -648,10 +647,6 @@ int main()
 
     ImageSprite imageSprite("coin.jpg");
 
-    Line unitLine;
-    unitLine.setColor(sf::Color(0,255,0));
-
-
 
     while (window.isOpen())
     {
@@ -659,8 +654,8 @@ int main()
 
         while (window.pollEvent(event))
         {
-            switch (event.type){
-
+            switch (event.type)
+            {
                 case sf::Event::Closed:
 
                     window.close();
@@ -669,70 +664,67 @@ int main()
                 case sf::Event::MouseWheelScrolled: // Scaling the image on mouse-scroll
                 {
 
-                    float zoomRatio = std::pow(1.05/* Zoom-Rate */, -event.mouseWheelScroll.delta);
+                    zoom = std::pow(1.05/* Zoom-Rate */, -event.mouseWheelScroll.delta);
 
-                    dynamicScale *= zoomRatio;
+                    dynamicScale *= zoom;
 
-                    if ( unitLine.secondPointDone ){ // cmPerPixel doesn't exist before unitLine
+                    if ( unit.secondPointDone ) // cmPerPixel doesn't exist before unit
+                        cmPerPixel /= zoom;
 
-                        cmPerPixel /= zoomRatio;
-
-                    }
+                    sf::Vector2f distance, newDistance;
 
                 // UPDATING IMAGE WHILE ZOOMING
 
-
-                    sf::Vector2f distance;
                     distance.x = event.mouseWheelScroll.x - imageSprite.getPosition().x;
                     distance.y = event.mouseWheelScroll.y - imageSprite.getPosition().y;
 
-                    sf::Vector2f newDistance = vectorXscalar(distance, zoomRatio);
+                    newDistance = vectorXscalar(distance, zoom);
 
                     imageSprite.setPosition(
                         event.mouseWheelScroll.x - newDistance.x,
                         event.mouseWheelScroll.y - newDistance.y
                     ); // 1. start position changed
 
-                    imageSprite.updateScale(zoomRatio); // 2. scale changed
+                    imageSprite.updateScale(zoom); // 2. scale changed
 
 
                 // UPDATING UNIT-LINE WHILE ZOOMING
 
                     for(short i=0; i<2; i++){
 
-                        distance.x = event.mouseWheelScroll.x - unitLine.endPoints[i].position.x;
-                        distance.y = event.mouseWheelScroll.y - unitLine.endPoints[i].position.y;
+                        distance.x = event.mouseWheelScroll.x - unit.endPoints[i].position.x;
+                        distance.y = event.mouseWheelScroll.y - unit.endPoints[i].position.y;
 
-                        newDistance = vectorXscalar(distance, zoomRatio);
+                        newDistance = vectorXscalar(distance, zoom);
 
-                        unitLine.endPoints[i].position.x = event.mouseWheelScroll.x - newDistance.x;
-                        unitLine.endPoints[i].position.y = event.mouseWheelScroll.y - newDistance.y;
+                        unit.endPoints[i].position.x = event.mouseWheelScroll.x - newDistance.x;
+                        unit.endPoints[i].position.y = event.mouseWheelScroll.y - newDistance.y;
                     }
 
                 // UPDATING MEASUREMENT-LINE WHILE ZOOMING
 
                     for(short i=0; i<2; i++){
 
-                        distance.x = event.mouseWheelScroll.x - measurementLine.endPoints[i].position.x;
-                        distance.y = event.mouseWheelScroll.y - measurementLine.endPoints[i].position.y;
+                        distance.x = event.mouseWheelScroll.x - line.endPoints[i].position.x;
+                        distance.y = event.mouseWheelScroll.y - line.endPoints[i].position.y;
 
-                        newDistance = vectorXscalar(distance, zoomRatio);
+                        newDistance = vectorXscalar(distance, zoom);
 
-                        measurementLine.endPoints[i].position.x = event.mouseWheelScroll.x - newDistance.x;
-                        measurementLine.endPoints[i].position.y = event.mouseWheelScroll.y - newDistance.y;
+                        line.endPoints[i].position.x = event.mouseWheelScroll.x - newDistance.x;
+                        line.endPoints[i].position.y = event.mouseWheelScroll.y - newDistance.y;
                     }
 
 
                 // UPDATING Point WHILE ZOOMING
 
-                    for(short i=0; i<measurementCircle.pointCount; i++){
+                    for(short i=0; i<circle.pointCount; i++){
 
-                        distance.x = event.mouseWheelScroll.x - measurementCircle.points[i].position.x;
-                        distance.y = event.mouseWheelScroll.y - measurementCircle.points[i].position.y;
+                        distance.x = event.mouseWheelScroll.x - circle.points[i].position.x;
+                        distance.y = event.mouseWheelScroll.y - circle.points[i].position.y;
 
-                        newDistance = vectorXscalar(distance, zoomRatio);
+                        newDistance = vectorXscalar(distance, zoom);
 
-                        measurementCircle.points[i].setPosition(
+                        circle.points[i].setPosition(
                             sf::Vector2f(
                                 event.mouseWheelScroll.x - newDistance.x,
                                 event.mouseWheelScroll.y - newDistance.y
@@ -744,68 +736,60 @@ int main()
 
                     // center
 
-                    distance.x = event.mouseWheelScroll.x - measurementCircle.center.x;
-                    distance.y = event.mouseWheelScroll.y - measurementCircle.center.y;
+                    distance.x = event.mouseWheelScroll.x - circle.center.x;
+                    distance.y = event.mouseWheelScroll.y - circle.center.y;
 
-                    newDistance = vectorXscalar(distance, zoomRatio);
+                    newDistance = vectorXscalar(distance, zoom);
 
-                    measurementCircle.center.x = event.mouseWheelScroll.x - newDistance.x;
-                    measurementCircle.center.y = event.mouseWheelScroll.y - newDistance.y;
+                    circle.center.x = event.mouseWheelScroll.x - newDistance.x;
+                    circle.center.y = event.mouseWheelScroll.y - newDistance.y;
 
                     // radius
 
-                    measurementCircle.radius *= zoomRatio;
-                    measurementCircle.update();
+                    circle.radius *= zoom;
+                    circle.update();
 
 
                     // centerPoint
 
-                    measurementCircle.centerPoint.setPosition
-                    (
-                        sf::Vector2f(
-                            event.mouseWheelScroll.x - newDistance.x,
-                            event.mouseWheelScroll.y - newDistance.y
-                        )
-                    );
+                    circle.centerPoint.setPosition( circle.center );
 
 
                 // UPDATING Angle Lines WHILE ZOOMING
 
                     for(short i=0; i<3; i++){
 
-                        distance.x = event.mouseWheelScroll.x - measurementAngle.verteces[i].position.x;
-                        distance.y = event.mouseWheelScroll.y - measurementAngle.verteces[i].position.y;
+                        distance.x = event.mouseWheelScroll.x - angle.verteces[i].position.x;
+                        distance.y = event.mouseWheelScroll.y - angle.verteces[i].position.y;
 
-                        newDistance = vectorXscalar(distance, zoomRatio);
+                        newDistance = vectorXscalar(distance, zoom);
 
-                        measurementAngle.verteces[i].position.x = event.mouseWheelScroll.x - newDistance.x;
-                        measurementAngle.verteces[i].position.y = event.mouseWheelScroll.y - newDistance.y;
+                        angle.verteces[i].position.x = event.mouseWheelScroll.x - newDistance.x;
+                        angle.verteces[i].position.y = event.mouseWheelScroll.y - newDistance.y;
                     }
+
+
                     break;
                 }
 
                 case sf::Event::MouseButtonPressed:
                 {
-                    bool unitButtonHasBeenClicked = unitButton.checkIfClicked( event, unitLine );
-                    bool lineButtonHasBeenClicked = lineButton.checkIfClicked( event, measurementLine );
-                    bool circleButtonHasBeenClicked = circleButton.checkIfClicked( event, measurementCircle );
-                    bool angleButtonHasBeenClicked = angleButton.checkIfClicked( event, measurementAngle );
+                    bool unitButtonHasBeenClicked = unitButton.checkIfClicked( event, unit );
+                    bool lineButtonHasBeenClicked = lineButton.checkIfClicked( event, line );
+                    bool circleButtonHasBeenClicked = circleButton.checkIfClicked( event, circle );
+                    bool angleButtonHasBeenClicked = angleButton.checkIfClicked( event, angle );
 
-                    if ( unitButton.isClicked && !unitButtonHasBeenClicked ) {
-                        createUnitLine(event, unitLine);
-                    }
+                    if ( unitButton.isClicked && !unitButtonHasBeenClicked )
+                        createUnit(event);
 
-                    if ( lineButton.isClicked && !lineButtonHasBeenClicked ) {
-                        createMeasurementLine(event);
-                    }
+                    if ( lineButton.isClicked && !lineButtonHasBeenClicked )
+                        createLine(event);
 
-                    if ( circleButton.isClicked && !circleButtonHasBeenClicked ) {
+                    if ( circleButton.isClicked && !circleButtonHasBeenClicked )
                         createCircle(event);
-                    }
 
-                    if ( angleButton.isClicked && !angleButtonHasBeenClicked ) {
+                    if ( angleButton.isClicked && !angleButtonHasBeenClicked )
                         createAngle(event);
-                    }
 
                     break;
                 }
@@ -816,19 +800,24 @@ int main()
         }
 
         window.clear();
+
+        // IMAGE
         window.draw(imageSprite);
 
-        unitLine.draw_me(window);
-        measurementLine.draw_me(window);
-        measurementCircle.draw_me(window);
-        measurementAngle.draw_me(window);
+        // LINES
+        unit.draw_me(window);
+        line.draw_me(window);
+        circle.draw_me(window);
+        angle.draw_me(window);
 
+        // NAV
         window.draw(navbar);
+
+        // BUTTONS
         window.draw(unitButton);
         window.draw(lineButton);
         window.draw(circleButton);
         window.draw(angleButton);
-
 
         window.display();
     }

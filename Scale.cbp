@@ -13,13 +13,13 @@
 				<Option compiler="gcc" />
 				<Compiler>
 					<Add option="-g" />
-					<Add directory="SFML-2.6.1/include" />
+					<Add directory="/home/hossain/SFML-2.6.1/include" />
 				</Compiler>
 				<Linker>
 					<Add library="sfml-graphics" />
 					<Add library="sfml-window" />
 					<Add library="sfml-system" />
-					<Add directory="SFML-2.6.1/lib" />
+					<Add directory="/home/hossain/SFML-2.6.1/lib" />
 				</Linker>
 			</Target>
 			<Target title="Release">
