@@ -636,16 +636,23 @@ void createAngle( sf::Event event )
 
 int main()
 {
+
+    std::string imageName;
+    std::cout << "What is the name of the image? : ";
+    std::cin >> imageName;
+    std::cout << "\nPlease set the unit line by clicking the first button \nbefore measuring length or radius ! \n\n";
+
+
     sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "Scale");
 
-    Button unitButton( "icons/unitNormal.png", unitColor);
-    Button lineButton( "icons/lineNormal.png", lineColor);
-    Button circleButton( "icons/circleNormal.png", circleColor);
-    Button angleButton( "icons/angleNormal.png", angleColor);
+    Button unitButton( "icons/unitIcon.png", unitColor);
+    Button lineButton( "icons/lineIcon.png", lineColor);
+    Button circleButton( "icons/circleIcon.png", circleColor);
+    Button angleButton( "icons/angleIcon.png", angleColor);
 
     Navbar navbar( WIDTH, NAV_HEIGHT );
 
-    ImageSprite imageSprite("coin.jpg");
+    ImageSprite imageSprite(imageName);
 
 
     while (window.isOpen())
@@ -690,8 +697,8 @@ int main()
 
                 // UPDATING UNIT-LINE WHILE ZOOMING
 
-                    for(short i=0; i<2; i++){
-
+                    for(short i=0; i<2; i++)
+                    {
                         distance.x = event.mouseWheelScroll.x - unit.endPoints[i].position.x;
                         distance.y = event.mouseWheelScroll.y - unit.endPoints[i].position.y;
 
@@ -703,8 +710,8 @@ int main()
 
                 // UPDATING MEASUREMENT-LINE WHILE ZOOMING
 
-                    for(short i=0; i<2; i++){
-
+                    for(short i=0; i<2; i++)
+                    {
                         distance.x = event.mouseWheelScroll.x - line.endPoints[i].position.x;
                         distance.y = event.mouseWheelScroll.y - line.endPoints[i].position.y;
 
@@ -717,8 +724,8 @@ int main()
 
                 // UPDATING Point WHILE ZOOMING
 
-                    for(short i=0; i<circle.pointCount; i++){
-
+                    for(short i=0; i<circle.pointCount; i++)
+                    {
                         distance.x = event.mouseWheelScroll.x - circle.points[i].position.x;
                         distance.y = event.mouseWheelScroll.y - circle.points[i].position.y;
 
@@ -757,8 +764,8 @@ int main()
 
                 // UPDATING Angle Lines WHILE ZOOMING
 
-                    for(short i=0; i<3; i++){
-
+                    for(short i=0; i<3; i++)
+                    {
                         distance.x = event.mouseWheelScroll.x - angle.verteces[i].position.x;
                         distance.y = event.mouseWheelScroll.y - angle.verteces[i].position.y;
 
@@ -793,6 +800,8 @@ int main()
 
                     break;
                 }
+
+
                 default:
                     break;
 
