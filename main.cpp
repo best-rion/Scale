@@ -133,7 +133,7 @@ public:
 
 
 
-class Button: public sf::RectangleShape
+class Button: public sf::RectangleShape, public Resetable
 {
 
 private:
@@ -178,6 +178,12 @@ public:
         buttonNumber++;
     }
 
+    void reset()
+    {
+        isClicked = false;
+        setNormalColor();
+    }
+
 
     bool checkIfClicked( sf::Event event, Resetable &resetableObject )
     {
@@ -215,6 +221,11 @@ public:
 
 };
 short Button::buttonNumber = 0;
+
+Button unitButton( "icons/unitIcon.png", unitColor);
+Button lineButton( "icons/lineIcon.png", lineColor);
+Button circleButton( "icons/circleIcon.png", circleColor);
+Button angleButton( "icons/angleIcon.png", angleColor);
 
 
 class Navbar: public sf::RectangleShape
@@ -313,6 +324,9 @@ void createLine(sf::Event event)
 
            // Showing line length
            std::cout << "Length of line = " << line.getLengthInCM() * 10 << " mm" << std::endl;
+
+           // Resetting lineButton
+           lineButton.reset();
         }
     }
 }
@@ -345,6 +359,9 @@ void createUnit(sf::Event event)
 
            // setting Unit
            cmPerPixel = 1.0/unit.getLengthInPX();
+
+           // Resetting unitButton
+           unitButton.reset();
         }
     }
 }
@@ -468,6 +485,9 @@ public:
             // Showing circle's radius
             std::cout << "Radius of curve = " << getRadiusInCM()*10 << " mm" << std::endl;
 
+            // Resetting circleButton
+            circleButton.reset();
+
             // Initialize centerPoint
             centerPoint.setPosition(center);
             centerPoint.setFillColor(sf::Color(255,127,0));
@@ -585,6 +605,9 @@ public:
 
             // Showing Angle
             std::cout << "Angle = " << angle << " Degree" << std::endl;
+
+            // Resetting angleButton
+            angleButton.reset();
         }
         else if ( vertexCount == 1 )
         {
@@ -644,11 +667,6 @@ int main()
 
 
     sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "Scale");
-
-    Button unitButton( "icons/unitIcon.png", unitColor);
-    Button lineButton( "icons/lineIcon.png", lineColor);
-    Button circleButton( "icons/circleIcon.png", circleColor);
-    Button angleButton( "icons/angleIcon.png", angleColor);
 
     Navbar navbar( WIDTH, NAV_HEIGHT );
 
